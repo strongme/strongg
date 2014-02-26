@@ -8,7 +8,7 @@
 
 var StrongG = (function(module) {
     module.doIt = function(targetObj) {
-        targetObj.prepend('<a href="https://github.com/strongme">Mail Me</a>');
+        targetObj.prepend('<a href="https://github.com/strongme" target="_blank">Mail Me'+Date().toString()+'</a><br/>');
     }
     module.clear = function(targetObj) {
         targetObj.html('');
