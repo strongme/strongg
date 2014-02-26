@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>StrongG</title>
+    <link type="text/css" href="css/bootstrap.css">
+    <link type="text/css" href="css/bootstrap-responsive.css">
+</head>
+<body>
+      <button id="doit">Do it</button>
+      <button id="clear">Clear</button>
+      <div id="result" class="hero-unit"></div>
+<script src="js/jquery-1.8.3.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/strongg.js"></script>
+<script>
+    $('#doit').click(function() {
+        StrongG.doIt($('#result'));
+    });
+    $('#clear').click(function() {
+        StrongG.clear($('#result'));
+    });
+
+
+</script>
+</body>
+</html>
