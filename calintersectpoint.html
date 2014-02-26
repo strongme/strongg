@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Intersect point</title>
+		<link rel="stylesheet" href="css/bootstrap.css"></link>
+		<link rel="stylesheet" href="css/bootstrap.css"></link>
+	</head>
+	<body>
+		<div style="position:absolute;left:500px;width:300px;margin-left:40px;margin-top:20px;">
+			<input type="text" placeholder="A:x" name="a" onchange="onChange(this)">
+			<input type="text" placeholder="A:y" name="b" onchange="onChange(this)">
+			<input type="text" placeholder="B:x" name="c" onchange="onChange(this)">
+			<input type="text" placeholder="B:y" name="d" onchange="onChange(this)">
+			<input type="text" placeholder="C:x" name="e" onchange="onChange(this)">
+			<input type="text" placeholder="C:y" name="f" onchange="onChange(this)">
+			<input type="text" placeholder="C:r" name="r" onchange="onChange(this)">
+			<button class="btn btn-primary" onclick="animation();">MOVE</button>
+		</div>
+		<script type="text/javascript" charset="utf-8" src="jquery-1.8.3.js"></script>
+		<script type="text/javascript" charset="utf-8" src="greensock/TweenMax.js"></script>
+		<script type="text/javascript" charset="utf-8" src="greensock/TimelineMax.js"></script>
+		<script type="text/javascript" charset="utf-8" src="cal.js"></script>
+		<script type="text/javascript" charset="utf-8" src="d3.v3.min.js"></script>
+		<script>
+			var a = 39,b=0,c=400,d=-40,e=150,f=-150,r=100;
+			var intersectPoint = [];
+			var canvas = d3.select('body').append('svg')
+				.attr('width',500)
+				.attr('height',500)
+				.style('margin-left',20)
+				.style('margin-top',20)
+				;
+			
+			var circle = canvas.append('circle')
+				.attr('cx',Math.abs(e))
+				.attr('cy',Math.abs(f))
+				.attr('r',r)
+				.attr('fill','steelblue');
+						
+			var xLine = [];
+			var yLine = [];
+			d3.range(501).map(function(d) {
+				if(d%10!==0)return;
+				xLine[d] = canvas.append('line')
+					.attr('x1',0)
+					.attr('y1',d)
+					.attr('x2',500)
+					.attr('y2',d)
+					.attr('stroke','red')
+					.attr('stroke-width','0.5');
+				yLine[d] = canvas.append('line')
+					.attr('x1',d)
+					.attr('y1',0)
+					.attr('x2',d)
+					.attr('y2',500)
+					.attr('stroke','red')
+					.attr('stroke-width','0.5');	
+			});
+			
+			var textAx = canvas.append('text')
+				.attr('x',Math.abs(a))
+				.attr('y',Math.abs(b))
+				.style('font-size',15)
+				.style('font-family','微软雅黑')
+				.text('A('+a+','+b+')')
+				;		
+			var textBx = canvas.append('text')
+				.attr('x',Math.abs(c))
+				.attr('y',Math.abs(d))
+				.style('font-size',15)
+				.style('font-family','微软雅黑')
+				.text('B('+(c)+','+(d)+')')
+				;
+			
+			var line = canvas.append('line')
+				.attr('x1',Math.abs(a))
+				.attr('x2',Math.abs(c))
+				.attr('y1',Math.abs(b))
+				.attr('y2',Math.abs(d))
+				.attr('stroke-width',3)
+				.attr('stroke','black');
+			
+			
+			function onPointChange() {
+				//重画圆
+				circle.attr('cx',Math.abs(e)).attr('cy',Math.abs(f)).attr('r',r);
+				//重画线
+				if(line)line.remove();
+				line = canvas.append('line')
+				.attr('x1',Math.abs(a))
+				.attr('x2',Math.abs(c))
+				.attr('y1',Math.abs(b))
+				.attr('y2',Math.abs(d))
+				.attr('stroke-width',3)
+				.attr('stroke','black');
+				//重画AB文本
+				textAx
+				.attr('x',Math.abs(a))
+				.attr('y',Math.abs(b))
+				.text('A('+a+','+b+')')
+				;	
+				textBx
+				.attr('x',Math.abs(c))
+				.attr('y',Math.abs(d))
+				.text('B('+c+','+d+')')
+				;
+				//清除交点
+				intersectPoint.map(function(d) {d.remove();});
+				intersectPoint = [];
+				//重画交点
+				drawIntersectPoint();
+			}
+			
+			
+			
+			function drawIntersectPoint() {
+				var m = (b-d)/(a-c);
+				var n = (a*d-b*c)/(a-c);
+				var M = (m*m+1);
+				var N = 2*(n*m-f*m-e);
+				var P = e*e-r*r+(n-f)*(n-f);
+				var result = calQuadraticEquationWithOneUnknow(M,N,P);
+				var color = 'yellow';
+				var rIp = 5;
+				if(result.length===1){
+					color = 'red';
+					rIp = 50;
+				}
+				result.map(function(d) {
+					var p = canvas.append('circle')
+						.attr('cx',Math.abs(d))
+						.attr('cy',Math.abs((m*d+n)))
+						.attr('r',rIp)
+						.attr('fill',color);
+					intersectPoint.push(p);
+				});
+			};
+			
+			drawIntersectPoint();
+			
+			function onChange(obj) {
+				var value = obj.value;
+				if(isNaN(value)) {alert('请填写数字');return;}
+				value = parseInt(value);
+				var name = obj.name;
+				eval(name+'='+value);
+				onPointChange();
+			}
+				
+			function animation() {
+				var t = new TimelineMax({onComplete:function() {t.reverse();},onReverseComplete:function() {t.restart();}});
+				var r = d3.range(500);
+				r = r.map(function(d) {return -d;});
+				var o = {'a':b};
+				r.map(function(d) {
+					t.to(o,.009,{a:d,onUpdate:function() {
+						b = o.a;
+						onPointChange();
+					}});
+				});
+			}
+			
+		</script>
+	</body>
+</html>
